@@ -6,7 +6,8 @@ from flask import Flask, render_template, request, redirect, url_for
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-USER_DATA = {"admin": "pass123"}
+ADMIN_PASS = os.environ.get('MY_APP_PASS', 'default_admin')
+USER_DATA = {"admin": ADMIN_PASS}
 DB_FILE = 'notes.json'
 UPLOAD_FOLDER = 'static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
