@@ -1,0 +1,100 @@
+/* Animation for the Glitter Shine */
+@keyframes glitter {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+}
+
+/* Professional Card with Random Glow */
+.card {
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    position: relative;
+    overflow: hidden;
+    /* Uses the variable passed from the HTML */
+    box-shadow: 0 10px 30px var(--glow-color); 
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* The Glitter Layer */
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 50%; height: 100%;
+    background: linear-gradient(
+        to right, 
+        rgba(255,255,255,0) 0%, 
+        rgba(255,255,255,0.6) 50%, 
+        rgba(255,255,255,0) 100%
+    );
+    transform: skewX(-25deg);
+    animation: glitter 3s infinite;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px var(--glow-color);
+}
+
+
+/* static/css/card.css */
+@keyframes glitter {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.card {
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    position: relative;
+    overflow: hidden;
+    /* This variable creates the random glow */
+    box-shadow: 0 10px 30px var(--glow-color); 
+    transition: transform 0.3s ease;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    background-size: 200% 100%;
+    animation: glitter 3s infinite;
+    pointer-events: none;
+}
+/* static/css/card.css */
+@keyframes sweep {
+    0% { left: -100%; }
+    50% { left: 100%; }
+    100% { left: 100%; }
+}
+
+.card {
+    position: relative;
+    overflow: hidden; /* This is critical to clip the glitter */
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    /* Use the variable with higher opacity for a stronger glow */
+    box-shadow: 0 12px 35px var(--glow-color); 
+}
+
+/* The Glitter Shine Layer */
+.card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 100px; /* Width of the shine */
+    height: 100%;
+    background: linear-gradient(
+        to right, 
+        rgba(255,255,255,0) 0%, 
+        rgba(255,255,255,0.8) 50%, 
+        rgba(255,255,255,0) 100%
+    );
+    transform: skewX(-25deg);
+    animation: sweep 4s infinite ease-in-out;
+}

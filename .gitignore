@@ -1,0 +1,4 @@
+notes.json
+static/uploads/
+__pycache__/
+.env

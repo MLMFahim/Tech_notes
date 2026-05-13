@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Details - {{ title }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --bg: #0f172a; --card: #1e293b; --blue: #38bdf8; --green: #10b981; --amber: #f59e0b; }
+        body { background: var(--bg); color: white; font-family: sans-serif; padding: 15px; margin: 0; }
+        
+        /* New: Sticky Header */
+        .sticky-header { position: sticky; top: 0; background: var(--bg); padding: 10px 0; z-index: 1000; border-bottom: 1px solid #334155; margin-bottom: 20px; }
+        
+        /* Existing Code Box + New Copy Button */
+        .code-container { position: relative; margin: 20px 0; }
+        .code-box { background: #000; padding: 15px; border-radius: 10px; color: #10b981; font-family: monospace; overflow-x: auto; border: 1px solid #334155; }
+        .copy-btn { position: absolute; top: 10px; right: 10px; background: var(--blue); color: #000; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 11px; font-weight: bold; }
+
+        /* New: Search/Filter Bar */
+        .filter-input { width: 100%; background: var(--card); border: 1px solid #334155; color: white; padding: 12px; border-radius: 8px; margin-bottom: 20px; box-sizing: border-box; }
+
+        /* Existing Subnote + New Hover Effects */
+        .subnote { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 3px solid var(--blue); transition: transform 0.2s; }
+        .subnote:hover { transform: scale(1.01); border-color: var(--green); }
+        
+        /* Improved Image Grid */
+        .img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-top: 10px; }
+        .img-grid img { width: 100%; height: 100px; object-fit: cover; border-radius: 8px; border: 1px solid #334155; cursor: pointer; }
+
+        .edit-form { display: none; margin-top: 10px; }
+        textarea { width: 100%; background: #0f172a; border: 1px solid #334155; color: white; padding: 10px; border-radius: 8px; margin-bottom: 10px; }
+        
+        .add-btn { width: 100%; background: var(--blue); padding: 12px; border: none; border-radius: 8px; font-weight: bold; color: #0f172a; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="sticky-header">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 5px;">
+            <a href="/home" style="color: var(--blue); text-decoration: none;"><i class="fas fa-arrow-left"></i> Systems</a>
+            <div style="display: flex; gap: 15px;">
+                <button onclick="shareContent()" style="background: none; border: none; color: var(--blue); cursor: pointer;"><i class="fas fa-share-alt"></i></button>
+                <span style="background: var(--green); color: black; font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: bold;">LIVE LOG</span>
+            </div>
+        </div>
+    </div>
+    
+    <h1 style="margin: 0 0 5px 0;">{{ icon }} {{ title }}</h1>
+    <p style="color: #94a3b8; font-size: 14px; margin-bottom: 20px;"><i class="fas fa-microchip"></i> Technical Maintenance History</p>
+
+    {% if logic %}
+    <div class="code-container">
+        <button class="copy-btn" onclick="copyCode()">COPY</button>
+        <div class="code-box">
+            <strong>LOGIC / SNIPPET:</strong>
+            <pre><code id="codeSnippet">{{ logic }}</code></pre>
+        </div>
+    </div>
+    {% endif %}
+
+    <input type="text" id="logFilter" class="filter-input" placeholder="🔍 Search through updates..." onkeyup="filterLogs()">
+
+    <div id="history-timeline">
+        {% for content in contents %}
+        <div class="subnote log-entry">
+            <div style="display: flex; justify-content: space-between;">
+                <small style="color: var(--blue); font-weight: bold;"><i class="far fa-clock"></i> {{ content.time }}</small>
+            </div>
+            
+            <p id="p-{{ loop.index0 }}" class="entry-text">{{ content.text }}</p>
+            
+            <div class="edit-form" id="edit-{{ loop.index0 }}">
+                <form action="{{ url_for('edit_subnote', title=title, index=loop.index0) }}" method="POST">
+                    <textarea name="new_text">{{ content.text }}</textarea>
+                    <button type="submit" style="color: #10b981; background: none; border: none; font-weight: bold;">Update</button>
+                    <button type="button" onclick="toggleEdit({{ loop.index0 }})" style="color: #94a3b8; background: none; border: none;">Cancel</button>
+                </form>
+            </div>
+
+            {% if content.images %}
+            <div class="img-grid">
+                {% for img in content.images %}
+                <img src="{{ url_for('static', filename='uploads/' + img) }}" onclick="window.open(this.src)" title="View Full Image">
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div style="margin-top: 15px; display: flex; gap: 20px; border-top: 1px solid #334155; padding-top: 10px;">
+                <button onclick="toggleEdit({{ loop.index0 }})" style="background:none; border:none; color: #fbbf24; font-size: 12px; cursor: pointer;"><i class="fas fa-edit"></i> Edit</button>
+                <a href="{{ url_for('delete_subnote', title=title, index=loop.index0) }}" style="color: #ef4444; font-size: 12px; text-decoration: none;" onclick="return confirm('Delete this update?')"><i class="fas fa-trash"></i> Delete</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div style="background: rgba(56,189,248,0.05); padding: 20px; border-radius: 15px; border: 1px dashed var(--blue); margin: 40px 0;">
+        <h4 style="margin-top: 0; color: var(--blue);"><i class="fas fa-plus-circle"></i> Add Maintenance Update</h4>
+        <form action="{{ url_for('details', title=title) }}" method="POST" enctype="multipart/form-data">
+            <textarea name="subnote" rows="4" placeholder="Detail the work done, issues found, or code changes..." required></textarea>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="font-size: 12px; color: #94a3b8; display: block; margin-bottom: 5px;">Attach Evidence/Diagrams:</label>
+                <input type="file" name="images" multiple accept="image/*">
+            </div>
+            
+            <button type="submit" class="add-btn">Save Update</button>
+        </form>
+    </div>
+
+    <script>
+        // Toggle Edit Form (Existing)
+        function toggleEdit(i) {
+            const f = document.getElementById('edit-' + i);
+            const p = document.getElementById('p-' + i);
+            f.style.display = f.style.display === 'block' ? 'none' : 'block';
+            p.style.display = p.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // New: Copy Code to Clipboard
+        function copyCode() {
+            const code = document.getElementById('codeSnippet').innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                btn.innerText = "COPIED!";
+                btn.style.background = "#10b981";
+                setTimeout(() => { 
+                    btn.innerText = "COPY"; 
+                    btn.style.background = "#38bdf8";
+                }, 2000);
+            });
+        }
+
+        // New: Search Filter Logic
+        function filterLogs() {
+            const input = document.getElementById('logFilter').value.toLowerCase();
+            const entries = document.getElementsByClassName('log-entry');
+            
+            for (let entry of entries) {
+                const text = entry.querySelector('.entry-text').innerText.toLowerCase();
+                entry.style.display = text.includes(input) ? "block" : "none";
+            }
+        }
+
+        // Share Content (Existing)
+        async function shareContent() {
+            if (navigator.share) {
+                try {
+                    await navigator.share({ title: '{{ title }}', text: 'Technical Log: {{ title }}', url: window.location.href });
+                } catch (err) { console.log('Share failed', err); }
+            }
+        }
+    </script>
+</body>
+</html>
